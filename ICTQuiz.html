@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>තොරතුරු සහ සන්නිවේදන තාක්ෂණය - Quiz</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --correct: #16a34a;
+            --correct-bg: #dcfce7;
+            --incorrect: #dc2626;
+            --incorrect-bg: #fee2e2;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            padding: 20px 10px;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 30px 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary-light);
+            transition: width 0.3s ease;
+        }
+
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 1rem;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary-light);
+            background-color: #f0f7ff;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-btn.correct {
+            border-color: var(--correct);
+            background-color: var(--correct-bg);
+            color: #14532d;
+            font-weight: 600;
+        }
+
+        .option-btn.incorrect {
+            border-color: var(--incorrect);
+            background-color: var(--incorrect-bg);
+            color: #7f1d1d;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: auto;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn:disabled {
+            background-color: var(--border);
+            cursor: not-allowed;
+        }
+
+        .results-container {
+            text-align: center;
+            padding: 20px 0;
+            display: none;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 480px) {
+            .quiz-container {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            .question-text {
+                font-size: 1.05rem;
+            }
+
+            .option-btn {
+                padding: 12px 14px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <header>
+        <h1>තොරතුරු සන්නිවේදන තාක්ෂණය හැඳින්වීම</h1>
+        <div class="subtitle">Lesson 01 - Interactive MCQ Quiz</div>
+    </header>
+
+    <div id="quiz-screen">
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="question-meta">
+            <span id="question-number">ප්‍රශ්නය 1/20</span>
+            <span id="score-tracker">ලකුණු: 0</span>
+        </div>
+
+        <div class="question-text" id="question-text">ප්‍රශ්නය මෙතැනින් පෙන්වනු ඇත...</div>
+
+        <div class="options-container" id="options-container">
+            <!-- Options dynamically loaded here -->
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="next-btn" disabled>ඊළඟ ප්‍රශ්නය</button>
+        </div>
+    </div>
+
+    <div class="results-container" id="results-screen">
+        <h2>ප්‍රශ්නාවලිය අවසානයි!</h2>
+        <div class="score-display" id="final-score">0 / 20</div>
+        <div class="result-message" id="result-message">ඔබගේ ප්‍රතිඵලය මෙතැනින් බලන්න.</div>
+        <button class="btn" onclick="restartQuiz()">නැවත උත්සාහ කරන්න</button>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        {
+            question: "1. පරිගණකයක් යනු කුමක්ද?",
+            options: [
+                "දත්ත ගබඩා කරන යාන්ත්‍රික උපකරණයකි",
+                "ලබා දෙන උපදෙස් අනුව දත්ත තොරතුරු බවට පරිවර්තනය කරන ඉලෙක්ට්‍රොනික උපකරණයකි",
+                "පණිවිඩ යැවීමට පමණක් භාවිතා කරන මෙවලමකි",
+                "ගණිතමය ගැටලු විතරක් විසඳන යන්ත්‍රයකි"
+            ],
+            correct: 1
+        },
+        {
+            question: "2. පරිගණකයක ක්‍රියාකාරීත්වයේදී ආදානය (Input) ලෙස ඇතුළත් කරන්නේ මොනවාද?",
+            options: [
+                "තොරතුරු පමණි",
+                "ප්‍රතිදාන සහ පාලන සංඥා",
+                "දත්ත සහ උපදෙස්",
+                "ද්විතීයික මතකය"
+            ],
+            correct: 2
+        },
+        {
+            question: "3. පරිගණකයේ ක්‍රියාවලියෙන් (Data Processing) පසු ලැබෙන ඵලය කුමක්ද?",
+            options: [
+                "දත්ත (Data)",
+                "තොරතුරු (Information)",
+                "උපදෙස් (Instructions)",
+                "ආදාන (Input)"
+            ],
+            correct: 1
+        },
+        {
+            question: "4. පහත සඳහන් ඒවායින් පරිගණකයක් භාවිතා කිරීමට හේතුවක් නොවන්නේ කුමක්ද?",
+            options: [
+                "අධික වේගය (Speed)",
+                "නිවැරදිභාවය (Accuracy)",
+                "විශ්වාසනීයත්වය (Reliability)",
+                "සීමිත ගබඩා ධාරිතාව (Low Storage Capacity)"
+            ],
+            correct: 3
+        },
+        {
+            question: "5. වර්තමානයේ පරිගණක භාවිතා කරන අතිරේක අවස්ථාවක් ලෙස නිබන්ධනයේ දක්වා ඇත්තේ කුමක්ද?",
+            options: [
+                "අන්තර්ජාල පහසුකම් ලබා ගැනීම",
+                "පණිවිඩ හුවමාරුව",
+                "විනෝදය සඳහා",
+                "ඉහත සියල්ලම"
+            ],
+            correct: 3
+        },
+        {
+            question: "6. පරිගණකයට දත්ත ඇතුළත් කිරීමට භාවිතා කරන ක්‍රම හඳුන්වන්නේ කෙසේද?",
+            options: [
+                "ප්‍රතිදාන ක්‍රම (Output Devices)",
+                "ආදාන ක්‍රම (Input Devices)",
+                "පාලන ඒකකය (Control Unit)",
+                "ප්‍රධාන මතකය (Main Memory)"
+            ],
+            correct: 1
+        },
+        {
+            question: "7. පරිගණකය විසින් සපයනු ලබන දත්ත හෝ තොරතුරු පිටතට ලබා දෙන්නේ කුමන ක්‍රමයක් මගින්ද?",
+            options: [
+                "ආදාන ක්‍රම (Input Devices)",
+                "ප්‍රතිදාන ක්‍රම (Output Devices)",
+                "ALU ඒකකය",
+                "ද්විතීයික මතකය"
+            ],
+            correct: 1
+        },
+        {
+            question: "8. පරිගණකයේ සියලුම කොටස් පාලනය කරනු ලබන දෘඩාංග (Hardware) කොටස කුමක්ද?",
+            options: [
+                "පාලන ඒකකය (Control Unit)",
+                "ගණිතමය හා තර්ක ඒකකය (ALU)",
+                "ප්‍රධාන මතකය (Main Memory)",
+                "ද්විතීයික මතකය (Secondary Storage)"
+            ],
+            correct: 0
+        },
+        {
+            question: "9. ALU යන්නෙහි සම්පූර්ණ ඉංග්‍රීසි නාමය කුමක්ද?",
+            options: [
+                "Access Logic Unit",
+                "Arithmetic and Logical Unit",
+                "Advanced Local Unit",
+                "Automatic Logical Unit"
+            ],
+            correct: 1
+        },
+        {
+            question: "10. පරිගණකයේ ගණනය කිරීම් සහ සැසඳීම් වැනි තාර්කික කාර්යයන් සිදු කරන්නේ කුමන ඒකකයෙන්ද?",
+            options: [
+                "Control Unit",
+                "Main Memory",
+                "Arithmetic and Logical Unit (ALU)",
+                "Output Devices"
+            ],
+            correct: 2
+        },
+        {
+            question: "11. දත්ත, තොරතුරු සහ උපදෙස් භාවිතාවන අවස්ථාවේදී තාවකාලිකව ගබඩා කර තබා ගන්නේ කුමන මතකයේද?",
+            options: [
+                "ද්විතීයික මතකය (Secondary Memory)",
+                "ප්‍රධාන මතකය (Main Memory)",
+                "ආදාන මෙවලම්",
+                "පාලන ඒකකය"
+            ],
+            correct: 1
+        },
+        {
+            question: "12. ප්‍රධාන මතකයෙන් පරිබාහිරව දත්ත සහ තොරතුරු ගබඩා කරන්නේ කුමන මතකයේද?",
+            options: [
+                "ද්විතීයික මතකය (Secondary Memory)",
+                "ALU",
+                "පාලන ඒකකය",
+                "ආදාන ඒකකය"
+            ],
+            correct: 0
+        },
+        {
+            question: "13. පරිගණකයේ මූලික සැකැස්ම (Block Diagram) අනුව පාලන සංඥා නිකුත් කරනු ලබන්නේ කුමන කොටසින්ද?",
+            options: [
+                "ප්‍රධාන මතකය",
+                "පාලන ඒකකය (Control Unit)",
+                "ප්‍රතිදාන ක්‍රම",
+                "ද්විතීයික මතකය"
+            ],
+            correct: 1
+        },
+        {
+            question: "14. පරිගණකයක උසස් ගබඩා ධාරිතාව හඳුන්වන ඉංග්‍රීසි පදය කුමක්ද?",
+            options: [
+                "Speed",
+                "Accuracy",
+                "Reliability",
+                "High Storage Capacity"
+            ],
+            correct: 3
+        },
+        {
+            question: "15. දත්ත (Data) තොරතුරු (Information) බවට පත්වන ක්‍රියාවලිය හඳුන්වන්නේ කුමක් ලෙසද?",
+            options: [
+                "දත්ත ඇතුළත් කිරීම",
+                "දත්ත සැකසීම (Data Processing)",
+                "දත්ත ප්‍රතිදානය කිරීම",
+                "දත්ත පාලනය කිරීම"
+            ],
+            correct: 1
+        },
+        {
+            question: "16. පරිගණක මූලික සැකැස්මේ (Block Diagram) ALU ඒකකය සෘජුවම සම්බන්ධ වී දත්ත හුවමාරු කරගන්නේ කුමන කොටස සමඟද?",
+            options: [
+                "ආදාන ක්‍රම",
+                "ප්‍රතිදාන ක්‍රම",
+                "ප්‍රධාන මතකය (Main Memory)",
+                "ද්විතීයික මතකය"
+            ],
+            correct: 2
+        },
+        {
+            question: "17. පරිගණකයක් මගින් ලබා දෙන පිළිතුරු වල ඇති නිවැරදිභාවය හඳුන්වන්නේ කුමන පදයෙන්ද?",
+            options: [
+                "Speed",
+                "Accuracy",
+                "Reliability",
+                "Capacity"
+            ],
+            correct: 1
+        },
+        {
+            question: "18. පරිගණකය සහ පරිශීලකයා අතර පණිවිඩ හුවමාරුව සඳහා (Communication) පරිගණකය භාවිතා කිරීම අයත් වන්නේ කුමන කාණ්ඩයටද?",
+            options: [
+                "මූලික ගණනය කිරීම් වලට",
+                "වර්තමාන භාවිත අවස්ථාවන් වලට",
+                "දත්ත සැකසීමට පමණි",
+                "ද්විතීයික මතක පාලනයට"
+            ],
+            correct: 1
+        },
+        {
+            question: "19. පරිගණකයේ පාලන ඒකකය (Control Unit) මගින් පාලනය කරනු ලබන්නේ කුමක්ද?",
+            options: [
+                "මෘදුකාංග පමණි",
+                "පරිගණකයේ සියලුම දෘඩාංග (Hardware) කොටස්",
+                "අන්තර්ජාලය පමණි",
+                "විනෝදාත්මක වැඩසටහන් පමණි"
+            ],
+            correct: 1
+        },
+        {
+            question: "20. පරිගණකයක ක්‍රියාවලිය නිවැරදි අනුපිළිවෙලින් දැක්වෙන පිළිතුර කුමක්ද?",
+            options: [
+                "ප්‍රතිදානය -> සැකසීම -> ආදානය",
+                "ආදානය -> සැකසීම -> ප්‍රතිදානය",
+                "සැකසීම -> ආදානය -> ප්‍රතිදානය",
+                "ප්‍රතිදානය -> ආදානය -> සැකසීම"
+            ],
+            correct: 1
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const questionNumber = document.getElementById('question-number');
+    const scoreTracker = document.getElementById('score-tracker');
+    const progressBar = document.getElementById('progress-bar');
+    const nextBtn = document.getElementById('next-btn');
+
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const finalScore = document.getElementById('final-score');
+    const resultMessage = document.getElementById('result-message');
+
+    function loadQuestion() {
+        answered = false;
+        nextBtn.disabled = true;
+
+        const q = quizData[currentQuestion];
+        questionText.textContent = q.question;
+        questionNumber.textContent = `ප්‍රශ්නය ${currentQuestion + 1}/${quizData.length}`;
+        progressBar.style.width = `${((currentQuestion) / quizData.length) * 100}%`;
+
+        optionsContainer.innerHTML = '';
+        q.options.forEach((optionText, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span>${optionText}</span>`;
+            btn.addEventListener('click', () => selectOption(index, btn));
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectOption(selectedIndex, selectedBtn) {
+        if (answered) return;
+        answered = true;
+
+        const correctIndex = quizData[currentQuestion].correct;
+        const options = optionsContainer.querySelectorAll('.option-btn');
+
+        if (selectedIndex === correctIndex) {
+            selectedBtn.classList.add('correct');
+            score++;
+            scoreTracker.textContent = `ලකුණු: ${score}`;
+        } else {
+            selectedBtn.classList.add('incorrect');
+            options[correctIndex].classList.add('correct');
+        }
+
+        options.forEach(btn => btn.disabled = true);
+        nextBtn.disabled = false;
+
+        if (currentQuestion === quizData.length - 1) {
+            nextBtn.textContent = 'ප්‍රතිඵල බලන්න';
+        }
+    }
+
+    nextBtn.addEventListener('click', () => {
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    });
+
+    function showResults() {
+        quizScreen.style.display = 'none';
+        resultsScreen.style.display = 'block';
+        finalScore.textContent = `${score} / ${quizData.length}`;
+
+        const percentage = (score / quizData.length) * 100;
+        if (percentage >= 80) {
+            resultMessage.textContent = "ඉතා විශිෂ්ටයි! ඔබ පාඩම හොඳින් වටහාගෙන ඇත.";
+        } else if (percentage >= 50) {
+            resultMessage.textContent = "හොඳයි! තවදුරටත් අධ්‍යයනය කර ලකුණු වැඩි කරගන්න.";
+        } else {
+            resultMessage.textContent = "නැවත පාඩම කියවා උත්සාහ කරන්න.";
+        }
+    }
+
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        scoreTracker.textContent = `ලකුණු: 0`;
+        nextBtn.textContent = 'ඊළඟ ප්‍රශ්නය';
+        resultsScreen.style.display = 'none';
+        quizScreen.style.display = 'block';
+        loadQuestion();
+    }
+
+    // Start Quiz
+    loadQuestion();
+</script>
+
+</body>
+</html>
